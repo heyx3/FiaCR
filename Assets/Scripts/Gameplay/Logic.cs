@@ -8,12 +8,31 @@ using UnityEngine;
 
 namespace Gameplay
 {
+	/// <summary>
+	/// Manages game logic, including enabling/disabling UI overlays and determining who won.
+	/// </summary>
 	public class Logic : Singleton<Logic>
 	{
-		public Players CurrentPlayer = (Players)0;
+		public GameObject TurnUI_Julia, TurnUI_Billy, TurnUI_Curse;
+		public GameObject Winner_Friends, Winner_Cursed;
+		public ScaleCameraToFit CamRegion;
 
 
-		public static bool DidHumansWin(Board board)
+		public Players CurrentPlayer
+		{
+			get { return currentPlayer; }
+			set
+			{
+				currentPlayer = value;
+				TurnUI_Julia.SetActive(currentPlayer == Players.Julia);
+				TurnUI_Billy.SetActive(currentPlayer == Players.Billy);
+				TurnUI_Curse.SetActive(currentPlayer == Players.Curse);
+			}
+		}
+		private Players currentPlayer;
+
+
+		public bool DidHumansWin(Board board)
 		{
 			//The humans win if there are no more cursed pieces,
 			//    and all cursed hosts are occupied by friendly pieces.
@@ -22,7 +41,7 @@ namespace Gameplay
 											  (board.Pieces.Get(host.Pos) != null &&
 											   !board.Pieces.Get(host.Pos).IsCursed));
 		}
-		public static bool DidCurseWin(Board board)
+		public bool DidCurseWin(Board board)
 		{
 			//The curse wins if there are no empty spaces to place new pieces,
 			//    and any existing friendly pieces have no movement options.
@@ -39,6 +58,35 @@ namespace Gameplay
 						   return friendlyMoves.Count == 0;
 					   }
 				   });
+		}
+
+		public void EndGame(Teams winner)
+		{
+			TurnUI_Julia.SetActive(false);
+			TurnUI_Billy.SetActive(false);
+			TurnUI_Curse.SetActive(false);
+
+			Winner_Friends.SetActive(winner == Teams.Friendly);
+			Winner_Cursed.SetActive(winner == Teams.Cursed);
+		}
+
+
+		protected override void Awake()
+		{
+			base.Awake();
+
+			TurnUI_Julia.SetActive(false);
+			TurnUI_Billy.SetActive(false);
+			TurnUI_Curse.SetActive(false);
+		}
+		private void Start()
+		{
+			CurrentPlayer = (Players)0;
+
+			float boardSize = (int)Board.Instance.BoardSize;
+			CamRegion.RegionToFit = new Rect(0.0f, 0.0f, boardSize, boardSize);
+
+			//TODO: Figure out how to position the UI elements. Get code from board games repo.
 		}
 	}
 }

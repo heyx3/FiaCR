@@ -18,9 +18,14 @@ public class InputResponder : MonoBehaviour
 	/// </summary>
 	public float MinDragDistance = 0.5f;
 
-
+	/// <summary>
+	/// An Inspector-visible event for when this is first clicked on.
+	/// </summary>
 	public UnityEngine.Events.UnityEvent Unity_OnStartClick =
 				new UnityEngine.Events.UnityEvent();
+	/// <summary>
+	/// An Inspector-visible event for when this just finished being clicked on.
+	/// </summary>
 	public UnityEngine.Events.UnityEvent Unity_OnStopClick =
 				new UnityEngine.Events.UnityEvent();
 

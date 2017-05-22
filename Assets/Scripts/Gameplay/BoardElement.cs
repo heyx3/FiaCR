@@ -34,9 +34,8 @@ namespace Gameplay
 			{
 				isCursed = value;
 
-				SpriteRender.sprite = (isCursed ?
-										  Sprite_Cursed :
-										  Sprite_Friendly);
+				ChildSprite_Friendly.SetActive(!isCursed);
+				ChildSprite_Cursed.SetActive(isCursed);
 			}
 		}
 		public Vector2i Pos
@@ -51,20 +50,17 @@ namespace Gameplay
 			}
 		}
 
-		public Sprite Sprite_Friendly, Sprite_Cursed;
 		
-		[SerializeField]
+		public GameObject ChildSprite_Friendly, ChildSprite_Cursed;
+		
 		private bool isCursed;
-		[SerializeField]
 		private Vector2i pos;
 
 
-		public SpriteRenderer SpriteRender { get; private set; }
-
-
-		private void Awake()
+		public void Reset(Teams team, Vector2i pos)
 		{
-			SpriteRender = GetComponent<SpriteRenderer>();
+			Team = team;
+			Pos = pos;
 		}
 	}
 }

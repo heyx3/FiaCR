@@ -28,10 +28,11 @@ namespace Gameplay
 		public int Seed;
 		public BoardSizes BoardSize = BoardSizes.Six;
 
-		public Sprite Sprite_Piece_Friendly, Sprite_Piece_Cursed,
-					  Sprite_Host_Friendly, Sprite_Host_Cursed;
-		public int SpriteDepth_Piece = 1,
-				   SpriteDepth_Host = 2;
+		public GameObject PiecePrefab, HostPrefab;
+		public Sprite GridCellSprite;
+		public int GridCellSortLayer = 0;
+
+		private GameObject gridCellsContainer = null;
 
 		
 		/// <summary>
@@ -42,30 +43,21 @@ namespace Gameplay
 		/// </param>
 		public BoardElement AddElement(bool isHost, Vector2i pos, Teams team)
 		{
-			GameObject go = new GameObject(isHost ? "Host" : "Piece");
-			var element = go.AddComponent<BoardElement>();
+			GameObject go = Instantiate(isHost ? HostPrefab : PiecePrefab);
+
+			var element = go.GetComponent<BoardElement>();
+			element.Reset(team, pos);
 
 			if (isHost)
 			{
-				element.Sprite_Friendly = Sprite_Host_Friendly;
-				element.Sprite_Cursed = Sprite_Host_Cursed;
-				element.SpriteRender.sortingOrder = SpriteDepth_Host;
-
 				UnityEngine.Assertions.Assert.IsNull(Hosts.Get(pos));
 				Hosts.Set(pos, element);
 			}
 			else
 			{
-				element.Sprite_Friendly = Sprite_Piece_Friendly;
-				element.Sprite_Cursed = Sprite_Piece_Cursed;
-				element.SpriteRender.sortingOrder = SpriteDepth_Piece;
-
 				UnityEngine.Assertions.Assert.IsNull(Pieces.Get(pos));
 				Pieces.Set(pos, element);
 			}
-
-			element.Team = team;
-			element.Pos = pos;
 
 			return element;
 		}
@@ -165,6 +157,7 @@ namespace Gameplay
 
 		private void ResetArrays()
 		{
+			//Reset the actual arrays.
 			int size = (int)BoardSize;
 			Pieces = new BoardElement[size, size];
 			Hosts = new BoardElement[size, size];
@@ -172,6 +165,21 @@ namespace Gameplay
 			{
 				Pieces.Set(boardPos, null);
 				Hosts.Set(boardPos, null);
+			}
+
+			//Also reset the grid cell sprites.
+			if (gridCellsContainer != null)
+				Destroy(gridCellsContainer);
+			gridCellsContainer = new GameObject("Grid Cells");
+			foreach (Vector2i boardPos in AllPoses)
+			{
+				GameObject cell = new GameObject(boardPos.ToString());
+				cell.transform.parent = gridCellsContainer.transform;
+				cell.transform.position = new Vector3(boardPos.x + 0.5f, boardPos.y + 0.5f, 0.0f);
+
+				var spr = cell.AddComponent<SpriteRenderer>();
+				spr.sprite = GridCellSprite;
+				spr.sortingOrder = GridCellSortLayer;
 			}
 		}
 
