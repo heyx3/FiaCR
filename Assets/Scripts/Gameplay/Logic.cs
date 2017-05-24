@@ -15,7 +15,10 @@ namespace Gameplay
 	{
 		public GameObject TurnUI_Julia, TurnUI_Billy, TurnUI_Curse;
 		public GameObject Winner_Friends, Winner_Cursed;
+		public GameObject[] ResetConfirmations = new GameObject[0];
+		public GameObject[] DisableOnCurseTurn = new GameObject[0];
 		public ScaleCameraToFit CamRegion;
+		public float CameraBorder = 1.5f;
 
 
 		public Players CurrentPlayer
@@ -27,6 +30,9 @@ namespace Gameplay
 				TurnUI_Julia.SetActive(currentPlayer == Players.Julia);
 				TurnUI_Billy.SetActive(currentPlayer == Players.Billy);
 				TurnUI_Curse.SetActive(currentPlayer == Players.Curse);
+
+				foreach (GameObject go in DisableOnCurseTurn)
+					go.SetActive(currentPlayer != Players.Curse);
 			}
 		}
 		private Players currentPlayer;
@@ -60,6 +66,10 @@ namespace Gameplay
 				   });
 		}
 
+		public void AdvanceTurn()
+		{
+			CurrentPlayer = (Players)(((uint)CurrentPlayer + 1) % 3);
+		}
 		public void EndGame(Teams winner)
 		{
 			TurnUI_Julia.SetActive(false);
@@ -70,6 +80,20 @@ namespace Gameplay
 			Winner_Cursed.SetActive(winner == Teams.Cursed);
 		}
 
+		public void ToggleResetConfirmation(bool shouldBeActive)
+		{
+			foreach (GameObject go in ResetConfirmations)
+				go.SetActive(shouldBeActive);
+		}
+		public void ResetGame()
+		{
+			Board.Instance.Start();
+			CurrentPlayer = (Players)0;
+			
+			foreach (GameObject go in ResetConfirmations)
+				go.SetActive(false);
+		}
+
 
 		protected override void Awake()
 		{
@@ -78,15 +102,18 @@ namespace Gameplay
 			TurnUI_Julia.SetActive(false);
 			TurnUI_Billy.SetActive(false);
 			TurnUI_Curse.SetActive(false);
+
+			foreach (GameObject go in ResetConfirmations)
+				go.SetActive(false);
 		}
 		private void Start()
 		{
 			CurrentPlayer = (Players)0;
 
 			float boardSize = (int)Board.Instance.BoardSize;
-			CamRegion.RegionToFit = new Rect(0.0f, 0.0f, boardSize, boardSize);
-
-			//TODO: Figure out how to position the UI elements. Get code from board games repo.
+			CamRegion.RegionToFit = new Rect(-CameraBorder, -CameraBorder,
+											 boardSize + (CameraBorder * 2.0f),
+											 boardSize + (CameraBorder * 2.0f));
 		}
 	}
 }

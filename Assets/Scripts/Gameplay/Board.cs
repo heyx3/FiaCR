@@ -155,6 +155,19 @@ namespace Gameplay
 			}
 		}
 
+		private bool initYet = false;
+		public void Start()
+		{
+			//If this isn't the first time Start() is called, clear the current board.
+			if (initYet)
+				ClearBoard();
+			initYet = false;
+
+			ResetArrays();
+
+			//TODO: set up pieces/hosts.
+		}
+
 		private void ResetArrays()
 		{
 			//Reset the actual arrays.
@@ -181,11 +194,6 @@ namespace Gameplay
 				spr.sprite = GridCellSprite;
 				spr.sortingOrder = GridCellSortLayer;
 			}
-		}
-
-		private void Start()
-		{
-			ResetArrays();
 		}
 	}
 }
