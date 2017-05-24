@@ -32,6 +32,7 @@ namespace Gameplay
 		public Sprite GridCellSprite;
 		public int GridCellSortLayer = 0;
 
+		private System.Random rng;
 		private GameObject gridCellsContainer = null;
 
 		
@@ -165,7 +166,20 @@ namespace Gameplay
 
 			ResetArrays();
 
-			//TODO: set up pieces/hosts.
+
+			//Generate some cursed hosts/pieces.
+			rng = new System.Random(Seed);
+			for (int i = 0; i < GameConsts.NHostsByBoardSize[BoardSize]; ++i)
+			{
+				//Keep generating host positions until we find one that isn't close to another host.
+				Vector2i newPos = new Vector2i(rng.Next((int)BoardSize),
+											   rng.Next((int)BoardSize));
+				while (AllHosts.Any(host => host.Pos.ManhattanDistance(newPos) < 2))
+					newPos = new Vector2i(rng.Next((int)BoardSize), rng.Next((int)BoardSize));
+
+				AddElement(true, newPos, Teams.Cursed);
+				AddElement(false, newPos, Teams.Cursed);
+			}
 		}
 
 		private void ResetArrays()

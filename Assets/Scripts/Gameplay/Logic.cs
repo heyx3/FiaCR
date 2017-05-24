@@ -94,20 +94,15 @@ namespace Gameplay
 				go.SetActive(false);
 		}
 
-
-		protected override void Awake()
+		
+		private void Start()
 		{
-			base.Awake();
-
 			TurnUI_Julia.SetActive(false);
 			TurnUI_Billy.SetActive(false);
 			TurnUI_Curse.SetActive(false);
-
 			foreach (GameObject go in ResetConfirmations)
 				go.SetActive(false);
-		}
-		private void Start()
-		{
+
 			CurrentPlayer = (Players)0;
 
 			float boardSize = (int)Board.Instance.BoardSize;

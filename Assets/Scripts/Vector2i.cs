@@ -22,6 +22,8 @@
 	public static bool operator ==(Vector2i a, Vector2i b) { return a.x == b.x && a.y == b.y; }
 	public static bool operator !=(Vector2i a, Vector2i b) { return !(a == b); }
 
+	public int ManhattanDistance(Vector2i other) { return System.Math.Abs(x - other.x) +
+														  System.Math.Abs(y - other.y); }
 
 	public override string ToString()
 	{
