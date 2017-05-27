@@ -33,9 +33,43 @@ namespace Gameplay
 
 				foreach (GameObject go in DisableOnCurseTurn)
 					go.SetActive(currentPlayer != Players.Curse);
+
+				switch (currentPlayer)
+				{
+					case Players.Billy:
+						MovesLeftThisTurn = GameConsts.NBillyMovesByBoardSize[Board.Instance.BoardSize];
+						break;
+					case Players.Julia:
+						MovesLeftThisTurn = GameConsts.NJuliaMovesByBoardSize[Board.Instance.BoardSize];
+						break;
+					case Players.Curse:
+						MovesLeftThisTurn =
+							(uint)Board.Instance.AllPieces.Where(piece => piece.IsCursed).Count();
+						break;
+
+					default: throw new NotImplementedException(currentPlayer.ToString());
+				}
+
+				if (OnTurnChanged != null)
+					OnTurnChanged();
 			}
 		}
 		private Players currentPlayer;
+
+		public uint MovesLeftThisTurn
+		{
+			get { return movesLeftThisTurn; }
+			set
+			{
+				movesLeftThisTurn = value;
+				if (OnMovesLeftChanged != null)
+					OnMovesLeftChanged();
+			}
+		}
+		private uint movesLeftThisTurn = 0;
+
+		public event Action OnTurnChanged;
+		public event Action OnMovesLeftChanged;
 
 
 		public bool DidHumansWin(Board board)
