@@ -63,6 +63,32 @@ namespace Gameplay
 			return element;
 		}
 		/// <summary>
+		/// Moves the element at the given position to the new given position.
+		/// </summary>
+		public void MoveElement(bool isHost, Vector2i oldPos, Vector2i newPos)
+		{
+			if (isHost)
+			{
+				Hosts.Get(oldPos).Pos = newPos;
+
+				Hosts.Set(newPos, Hosts.Get(oldPos));
+				Hosts.Set(oldPos, null);
+			}
+			else
+			{
+				var piece = Pieces.Get(oldPos);
+				var host = Hosts.Get(oldPos);
+
+				piece.Pos = newPos;
+				Pieces.Set(newPos, piece);
+				Pieces.Set(oldPos, null);
+
+				//If the piece just moved off a host, create a new piece on the host.
+				if (host != null)
+					AddElement(false, oldPos, host.Team);
+			}
+		}
+		/// <summary>
 		/// Removes the given piece/host at the given position.
 		/// </summary>
 		/// <param name="isHost">
@@ -73,12 +99,12 @@ namespace Gameplay
 		{
 			if (isHost)
 			{
-				Destroy(Hosts.Get(pos));
+				Destroy(Hosts.Get(pos).gameObject);
 				Hosts.Set(pos, null);
 			}
 			else
 			{
-				Destroy(Pieces.Get(pos));
+				Destroy(Pieces.Get(pos).gameObject);
 				Pieces.Set(pos, null);
 			}
 		}
@@ -91,6 +117,36 @@ namespace Gameplay
 				RemoveElement(false, piece.Pos);
 			foreach (var host in AllHosts)
 				RemoveElement(true, host.Pos);
+		}
+
+		/// <summary>
+		/// Applies the given results of a move.
+		/// </summary>
+		public void Apply(MovementResults moveResults, Teams team)
+		{
+			//Capture the pieces.
+			foreach (var piece in moveResults.Captures)
+				piece.Team = team;
+
+			//Convert a block of pieces to a host.
+			if (moveResults.HostBlockMinCorner.HasValue)
+			{
+				//Remove the block of pieces making a host.
+				foreach (Vector2i p in new Vector2i.Iterator(new Vector2i(GameConsts.HostBlockSize,
+																		  GameConsts.HostBlockSize)))
+				{
+					Vector2i tilePos = moveResults.HostBlockMinCorner.Value + p;
+					if (Pieces.Get(tilePos) != null)
+						RemoveElement(false, tilePos);
+				}
+
+				//Make the host.
+				Vector2i hostPos = moveResults.HostBlockMinCorner.Value +
+								   (GameConsts.HostBlockSize / 2);
+				if (Hosts.Get(hostPos) != null)
+					RemoveElement(true, hostPos);
+				AddElement(true, hostPos, team);
+			}
 		}
 
 		/// <summary>
@@ -162,7 +218,7 @@ namespace Gameplay
 			//If this isn't the first time Start() is called, clear the current board.
 			if (initYet)
 				ClearBoard();
-			initYet = false;
+			initYet = true;
 
 			ResetArrays();
 

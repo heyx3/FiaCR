@@ -31,6 +31,7 @@ public class InputResponder : MonoBehaviour
 
 	/// <summary>
 	/// Called when this item is first clicked on.
+	/// The given mouse position is in world space.
 	/// </summary>
 	public event Action<InputResponder, Vector2> OnStartClick;
 	/// <summary>
@@ -38,18 +39,21 @@ public class InputResponder : MonoBehaviour
 	/// Only happens once the mouse moves more than "MinDragDistance".
 	/// The first Vector2 is the previous mouse position.
 	/// The second Vector2 is the current mouse position.
+	/// The mouse positions are in world space.
 	/// </summary>
 	public event Action<InputResponder, Vector2, Vector2> OnDrag;
 
 	/// <summary>
 	/// Called when this item just stopped being clicked on.
 	/// Only gets called if the mouse *wasn't* dragging.
+	/// The given mouse position is in world space.
 	/// </summary>
 	public event Action<InputResponder, Vector2> OnStopClick;
 	/// <summary>
 	/// Called when this item stopped being dragged around.
 	/// The first Vector2 is the original mouse position.
 	/// The second Vector2 is the final mouse position.
+	/// The mouse positions are in world space.
 	/// </summary>
 	public event Action<InputResponder, Vector2, Vector2> OnStopDrag;
 

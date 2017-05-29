@@ -7,33 +7,34 @@ using System.Text;
 namespace Gameplay
 {
 	//TODO: Maybe constrain julia placements to adjacent friendly pieces?
+	//TODO: What to do if the block of pieces is directly centered over a host block? Ignore if it's friendly, overwrite if it's enemy?
 
 	/// <summary>
 	/// Placing a new friendly piece onto the field.
 	/// </summary>
-	public struct Moves_Julia
+	public struct Move_Julia
 	{
-		public static void GetMoves(Board board, List<Moves_Julia> outMoves)
+		public static void GetMoves(Board board, List<Move_Julia> outMoves)
 		{
 			foreach (Vector2i pos in board.AllPoses)
 				if (board.Pieces.Get(pos) == null)
-					outMoves.Add(new Moves_Julia(pos));
+					outMoves.Add(new Move_Julia(pos));
 		}
 
 		public Vector2i Pos;
-		public Moves_Julia(Vector2i pos) { Pos = pos; }
+		public Move_Julia(Vector2i pos) { Pos = pos; }
 	}
 	/// <summary>
 	/// Moving a friendly piece to another position.
 	/// </summary>
-	public struct Moves_Billy
+	public struct Move_Billy
 	{
-		public static void GetMoves(Board board, List<Moves_Billy> outMoves)
+		public static void GetMoves(Board board, List<Move_Billy> outMoves)
 		{
 			foreach (var friendlyPiece in board.AllPieces.Where(p => !p.IsCursed))
 				GetMoves(board, friendlyPiece, outMoves);
 		}
-		public static void GetMoves(Board board, BoardElement piece, List<Moves_Billy> outMoves)
+		public static void GetMoves(Board board, BoardElement piece, List<Move_Billy> outMoves)
 		{
 			//Breadth-first search up to a certain distance away.
 			//Each "hop" is a valid move as long as the space is empty.
@@ -49,7 +50,7 @@ namespace Gameplay
 				alreadyChecked.Add(hop.Key);
 
 				if (board.Pieces.Get(hop.Key) == null)
-					outMoves.Add(new Moves_Billy(piece, hop.Key));
+					outMoves.Add(new Move_Billy(piece, hop.Key));
 
 				//Make more hops.
 				if (hop.Value > 0)
@@ -70,7 +71,7 @@ namespace Gameplay
 
 		public BoardElement Piece;
 		public Vector2i NewPos;
-		public Moves_Billy(BoardElement piece, Vector2i newPos)
+		public Move_Billy(BoardElement piece, Vector2i newPos)
 		{
 			Piece = piece;
 			NewPos = newPos;
@@ -81,23 +82,23 @@ namespace Gameplay
 	/// <summary>
 	/// Moving a cursed piece to another position.
 	/// </summary>
-	public struct Moves_Curse
+	public struct Move_Curse
 	{
-		public static void GetMoves(Board board, List<Moves_Curse> outMoves)
+		public static void GetMoves(Board board, List<Move_Curse> outMoves)
 		{
 			foreach (var cursedPiece in board.AllPieces.Where(p => p.IsCursed))
 			{
 				foreach (Vector2i neighborPos in new Vector2i.Neighbors(cursedPiece.Pos))
 				{
 					if (board.IsInRange(neighborPos) && board.Pieces.Get(neighborPos) == null)
-						outMoves.Add(new Moves_Curse(cursedPiece, neighborPos));
+						outMoves.Add(new Move_Curse(cursedPiece, neighborPos));
 				}
 			}
 		}
 
 		public BoardElement Piece;
 		public Vector2i NewPos;
-		public Moves_Curse(BoardElement piece, Vector2i newPos)
+		public Move_Curse(BoardElement piece, Vector2i newPos)
 		{
 			Piece = piece;
 			NewPos = newPos;
@@ -149,7 +150,10 @@ namespace Gameplay
 				else if (!board.IsInRange(boardPos))
 					return null;
 
-				return board.Pieces.Get(boardPos).Team;
+				var piece = board.Pieces.Get(boardPos);
+				return (piece == null ?
+					        new Teams?() :
+							piece.Team);
 			};
 
 			//Try to find a square of identical pieces around the moved piece.
@@ -221,8 +225,11 @@ namespace Gameplay
 				//Outside the board.
 				else if (!board.IsInRange(boardPos))
 					return null;
-
-				return board.Pieces.Get(boardPos).Team;
+				
+				var piece = board.Pieces.Get(boardPos);
+				return (piece == null ?
+					        new Teams?() :
+							piece.Team);
 			};
 
 			//Check all orthogonal directions away from the piece to find a line of enemies.
@@ -267,18 +274,18 @@ namespace Gameplay
 
 
 		public MovementResults() { }
-		public MovementResults(Board board, Moves_Julia move)
+		public MovementResults(Board board, Move_Julia move)
 		{
 			HostBlockMinCorner = GetHostBlock(board, move.Pos, null, Teams.Friendly);
 			GetCaptures(board, Captures, null, move.Pos, Teams.Friendly, HostBlockMinCorner);
 		}
-		public MovementResults(Board board, Moves_Billy move)
+		public MovementResults(Board board, Move_Billy move)
 		{
 			HostBlockMinCorner = GetHostBlock(board, move.NewPos, move.Piece.Pos, Teams.Friendly);
 			GetCaptures(board, Captures, move.Piece.Pos, move.NewPos,
 						Teams.Friendly, HostBlockMinCorner);
 		}
-		public MovementResults(Board board, Moves_Curse move)
+		public MovementResults(Board board, Move_Curse move)
 		{
 			HostBlockMinCorner = GetHostBlock(board, move.NewPos, move.Piece.Pos, Teams.Cursed);
 			GetCaptures(board, Captures, move.Piece.Pos, move.NewPos, Teams.Cursed, HostBlockMinCorner);

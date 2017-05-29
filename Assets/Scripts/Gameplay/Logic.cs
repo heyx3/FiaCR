@@ -64,6 +64,9 @@ namespace Gameplay
 				movesLeftThisTurn = value;
 				if (OnMovesLeftChanged != null)
 					OnMovesLeftChanged();
+
+				if (movesLeftThisTurn < 1)
+					AdvanceTurn();
 			}
 		}
 		private uint movesLeftThisTurn = 0;
@@ -85,7 +88,7 @@ namespace Gameplay
 		{
 			//The curse wins if there are no empty spaces to place new pieces,
 			//    and any existing friendly pieces have no movement options.
-			List<Moves_Billy> friendlyMoves = new List<Moves_Billy>();
+			List<Move_Billy> friendlyMoves = new List<Move_Billy>();
 			return board.AllPoses.Enumerable().All(pos => board.Pieces.Get(pos) != null) &&
 				   board.AllPieces.All(piece =>
 				   {
@@ -94,7 +97,7 @@ namespace Gameplay
 					   else
 					   {
 						   friendlyMoves.Clear();
-						   Moves_Billy.GetMoves(board, piece, friendlyMoves);
+						   Move_Billy.GetMoves(board, piece, friendlyMoves);
 						   return friendlyMoves.Count == 0;
 					   }
 				   });

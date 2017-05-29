@@ -20,7 +20,8 @@ public class DisplayMovesLeft : MonoBehaviour
 	}
 	private void OnDestroy()
 	{
-		Gameplay.Logic.Instance.OnMovesLeftChanged -= Callback_MovesLeftChanged;
+		if (Gameplay.Logic.Instance != null)
+			Gameplay.Logic.Instance.OnMovesLeftChanged -= Callback_MovesLeftChanged;
 	}
 
 	private void Callback_MovesLeftChanged()
