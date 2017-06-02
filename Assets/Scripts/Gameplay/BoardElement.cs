@@ -50,6 +50,11 @@ namespace Gameplay
 			}
 		}
 
+		public GameObject ActiveSpriteObj
+		{
+			get { return (isCursed ? ChildSprite_Cursed : ChildSprite_Friendly); }
+		}
+
 		
 		public GameObject ChildSprite_Friendly, ChildSprite_Cursed;
 		

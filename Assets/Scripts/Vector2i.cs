@@ -89,7 +89,7 @@
 
 		public Vector2i SourcePos { get { return sourcePos; } }
 		public int CurrentIndex { get { return currentIndex; } }
-		public Vector2i Current { get { return LocalPoses[currentIndex]; } }
+		public Vector2i Current { get { return sourcePos + LocalPoses[currentIndex]; } }
 
 		private Vector2i sourcePos;
 		private int currentIndex;

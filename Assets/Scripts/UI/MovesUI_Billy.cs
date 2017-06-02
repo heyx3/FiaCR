@@ -10,9 +10,11 @@ public class MovesUI_Billy : Singleton<MovesUI_Billy>
 	public Color SpriteCol = Color.white;
 	public float SpriteScale = 0.9f;
 	public int SpriteLayer = 2;
+	public Color MovedColor = Color.gray;
 
 	private List<SpriteRenderer> moveSprites = null;
 	private List<Gameplay.Move_Billy> moveOptions = new List<Gameplay.Move_Billy>();
+	private Gameplay.BoardElement activePiece = null;
 
 	private Gameplay.Logic Logic { get { return Gameplay.Logic.Instance; } }
 	private Gameplay.Board Board { get { return Gameplay.Board.Instance; } }
@@ -25,6 +27,10 @@ public class MovesUI_Billy : Singleton<MovesUI_Billy>
 
 	private void Callback_TurnChanged()
 	{
+		//Undo any modifications to piece color.
+		foreach (var piece in Board.AllPieces)
+			piece.ActiveSpriteObj.GetComponent<SpriteRenderer>().color = Color.white;
+
 		if (Logic.CurrentPlayer == Gameplay.Players.Billy)
 		{
 			//Make each piece a responder that can be clicked on.
@@ -47,7 +53,11 @@ public class MovesUI_Billy : Singleton<MovesUI_Billy>
 				moveOptions.Clear();
 
 				foreach (var piece in Board.AllPieces)
-					Destroy(piece.GetComponent<InputResponder>());
+				{
+					var responder = piece.GetComponent<InputResponder>();
+					if (responder != null)
+						Destroy(responder);
+				}
 			}
 		}
 	}
@@ -58,9 +68,9 @@ public class MovesUI_Billy : Singleton<MovesUI_Billy>
 		if (moveSprites != null)
 			SpritePool.Instance.DeallocateSprites(moveSprites);
 		moveOptions.Clear();
-
-		//TODO: This is all weird.
-		Gameplay.Move_Billy.GetMoves(Board, piece.GetComponent<Gameplay.BoardElement>(), moveOptions);
+		
+		activePiece = piece.GetComponent<Gameplay.BoardElement>();
+		Gameplay.Move_Billy.GetMoves(Board, activePiece, moveOptions);
 		moveSprites = SpritePool.Instance.AllocateSprites(moveOptions.Count, OptionSprite,
 														  SpriteLayer, null, "Billy Move");
 		for (int i = 0; i < moveSprites.Count; ++i)
@@ -86,8 +96,11 @@ public class MovesUI_Billy : Singleton<MovesUI_Billy>
 			Board.MoveElement(false, move.Piece.Pos, move.NewPos);
 			Board.Apply(results, Gameplay.Teams.Friendly);
 
-			//Stop this piece from being movable again.
-			Destroy(responder);
+			//Stop the piece from being movable again.
+			activePiece.ActiveSpriteObj.GetComponent<SpriteRenderer>().color = MovedColor;
+			Destroy(activePiece.GetComponent<InputResponder>());
+			SpritePool.Instance.DeallocateSprites(moveSprites);
+			moveOptions.Clear();
 
 			Logic.MovesLeftThisTurn -= 1;
 		};

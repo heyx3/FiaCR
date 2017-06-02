@@ -43,7 +43,6 @@ namespace Gameplay
 			HashSet<Vector2i> alreadyChecked = new HashSet<Vector2i>();
 			hopsToCheck.Enqueue(new KeyValuePair<Vector2i, int>(piece.Pos,
 																GameConsts.NSpacesPerBillyMove));
-			alreadyChecked.Add(piece.Pos);
 			while (hopsToCheck.Count > 0)
 			{
 				var hop = hopsToCheck.Dequeue();
