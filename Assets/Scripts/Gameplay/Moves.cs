@@ -83,15 +83,22 @@ namespace Gameplay
 	/// </summary>
 	public struct Move_Curse
 	{
-		public static void GetMoves(Board board, List<Move_Curse> outMoves)
+		public static void GetMoves(Board board, List<List<Move_Curse>> out_MovesPerPiece)
 		{
 			foreach (var cursedPiece in board.AllPieces.Where(p => p.IsCursed))
 			{
+				List<Move_Curse> list = null;
 				foreach (Vector2i neighborPos in new Vector2i.Neighbors(cursedPiece.Pos))
 				{
 					if (board.IsInRange(neighborPos) && board.Pieces.Get(neighborPos) == null)
-						outMoves.Add(new Move_Curse(cursedPiece, neighborPos));
+					{
+						if (list == null)
+							list = new List<Move_Curse>(4);
+						list.Add(new Move_Curse(cursedPiece, neighborPos));
+					}
 				}
+				if (list != null)
+					out_MovesPerPiece.Add(list);
 			}
 		}
 
@@ -103,6 +110,14 @@ namespace Gameplay
 			NewPos = newPos;
 
 			UnityEngine.Assertions.Assert.IsTrue(piece.IsCursed);
+		}
+
+		/// <summary>
+		/// Gets whether this move is still valid on the given board.
+		/// </summary>
+		public bool IsStillValid(Board board)
+		{
+			return board.IsInRange(NewPos) && board.Pieces.Get(NewPos) == null;
 		}
 	}
 
@@ -135,7 +150,7 @@ namespace Gameplay
 				if (host != null)
 					pieceAtPreviousPos = host.Team;
 			}
-			
+
 			Func<Vector2i, Teams?> getPieceAt = (boardPos) =>
 			{
 				//Special cases:
@@ -208,7 +223,7 @@ namespace Gameplay
 				if (host != null)
 					pieceAtPreviousPos = host.Team;
 			}
-			
+
 			Func<Vector2i, Teams?> getPieceAt = (boardPos) =>
 			{
 				//Special cases:
@@ -224,7 +239,7 @@ namespace Gameplay
 				//Outside the board.
 				else if (!board.IsInRange(boardPos))
 					return null;
-				
+
 				var piece = board.Pieces.Get(boardPos);
 				return (piece == null ?
 					        new Teams?() :

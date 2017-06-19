@@ -18,7 +18,7 @@ public class MovesUI_Billy : Singleton<MovesUI_Billy>
 
 	private Gameplay.Logic Logic { get { return Gameplay.Logic.Instance; } }
 	private Gameplay.Board Board { get { return Gameplay.Board.Instance; } }
-	
+
 
 	private void Start()
 	{
@@ -68,7 +68,7 @@ public class MovesUI_Billy : Singleton<MovesUI_Billy>
 		if (moveSprites != null)
 			SpritePool.Instance.DeallocateSprites(moveSprites);
 		moveOptions.Clear();
-		
+
 		activePiece = piece.GetComponent<Gameplay.BoardElement>();
 		Gameplay.Move_Billy.GetMoves(Board, activePiece, moveOptions);
 		moveSprites = SpritePool.Instance.AllocateSprites(moveOptions.Count, OptionSprite,

@@ -71,6 +71,9 @@ namespace Gameplay
 		}
 		private uint movesLeftThisTurn = 0;
 
+		public int TurnIndex { get { return turnIndex; } }
+		private int turnIndex = 0;
+
 		public event Action OnTurnChanged;
 		public event Action OnMovesLeftChanged;
 
@@ -105,6 +108,7 @@ namespace Gameplay
 
 		public void AdvanceTurn()
 		{
+			turnIndex += 1;
 			CurrentPlayer = (Players)(((uint)CurrentPlayer + 1) % 3);
 		}
 		public void EndGame(Teams winner)
@@ -126,12 +130,13 @@ namespace Gameplay
 		{
 			Board.Instance.Start();
 			CurrentPlayer = (Players)0;
-			
+			turnIndex = 0;
+
 			foreach (GameObject go in ResetConfirmations)
 				go.SetActive(false);
 		}
 
-		
+
 		private void Start()
 		{
 			TurnUI_Julia.SetActive(false);
